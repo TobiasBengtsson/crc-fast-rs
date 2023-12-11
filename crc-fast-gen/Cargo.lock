@@ -3,12 +3,5 @@
 version = 3
 
 [[package]]
-name = "crc-fast-gen"
+name = "crc-fast"
 version = "0.1.0"
-
-[[package]]
-name = "crc24-opgp-fast"
-version = "0.1.0"
-dependencies = [
- "crc-fast-gen",
-]

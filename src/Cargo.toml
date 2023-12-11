@@ -2,5 +2,5 @@
 
 members = [
     "crc-fast-gen",
-    "crc24-opgp-fast",
+    "crc24-fast",
 ]
