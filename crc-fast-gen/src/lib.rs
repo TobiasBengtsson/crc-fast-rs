@@ -44,6 +44,8 @@ pub fn crc(ts: TokenStream) -> TokenStream {
     let args: Vec<&str> = args_str.split(", ").collect();
     let poly_str = args.get(0).unwrap();
     let init_str = args.get(1).unwrap();
+    let lorem_expected_result = args.get(2).unwrap();
+    let lorem_aligned_expected_result = args.get(3).unwrap();
 
     // Shifted to the left to 32-bits (i.e. with trailing zeroes).
     let poly_str_simd = format!("{:0<11}", poly_str);
@@ -237,14 +239,18 @@ mod tests {
     pub fn test_lorem() {
         // Lorem ipsum
         let result = unsafe {hash_pclmulqdq(b"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing") };
-        assert_eq!(result, 0x470B16);
+"# +
+     format!("        assert_eq!(result, {});", lorem_expected_result).as_str() +
+r#"
     }
 
     #[test]
     pub fn test_lorem_aligned() {
         // Lorem ipsum padded to 128-bits
         let result = unsafe { hash_pclmulqdq(b"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing aaaaaaaaaaaaaaa") };
-        assert_eq!(result, 0xE8DDBB);
+"# +
+     format!("        assert_eq!(result, {});", lorem_aligned_expected_result).as_str() +
+r#"
     }
 
     #[test]
