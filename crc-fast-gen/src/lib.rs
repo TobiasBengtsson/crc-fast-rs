@@ -1,11 +1,63 @@
 use proc_macro::TokenStream;
 
+// Adapted from https://stackoverflow.com/q/21171733
+fn calc_const(mut t: u32, mut poly: u64) -> (u64, u64) {
+    let mut n = get_n(format!("{:#X}", poly).as_str());
+    if t < n {
+        return (0, poly);
+    }
+
+    let m = (1 << n) - 1;
+    poly = poly & m;
+    let mut r = poly;
+    let mut q = 1;
+    n = n - 1;
+    t = t - 1;
+    while t > n {
+        let high = (r >> n) & 1;
+        q = (q << 1) | high;  /* quotient bits may be lost off the top */
+        r = r << 1;
+        if high != 0 {
+            r = r ^ poly;
+        }
+
+        t = t - 1
+    }
+    return (q, r & m);
+}
+
+/// Get the degree of the polynomial. Throws if unsupported.
+/// WARNING: still UB for unsupported degrees (since the string can have the
+/// same length as a supported one, and the function is currently rather naive)
+fn get_n(poly_str: &str) -> u32 {
+    let n = 4 * (poly_str.len() - 3);
+    if !matches!(n, 8 | 16 | 24 | 32) {
+        unimplemented!("{}-bit CRCs are not currently supported", n)
+    }
+
+    n as u32
+}
+
 #[proc_macro]
 pub fn crc(ts: TokenStream) -> TokenStream {
     let args_str = ts.to_string();
     let args: Vec<&str> = args_str.split(", ").collect();
     let poly_str = args.get(0).unwrap();
     let init_str = args.get(1).unwrap();
+
+    // Shifted to the left to 32-bits (i.e. with trailing zeroes).
+    let poly_str_simd = format!("{:0<11}", poly_str);
+    let init_str_simd = format!("{:0<10}", init_str);
+
+    // Calculate constants used in SIMD
+    let poly = u64::from_str_radix(poly_str_simd.strip_prefix("0x").unwrap(), 16).unwrap();
+    let (u, k6) = calc_const(64, poly);
+    let (_, k5) = calc_const(96, poly);
+    let (_, k4) = calc_const(128, poly);
+    let (_, k3) = calc_const(128 + 64, poly);
+    let (_, k2) = calc_const(128 * 4, poly);
+    let (_, k1) = calc_const(128 * 4 + 64, poly);
+
     (r#"
 #[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::*;
@@ -49,18 +101,15 @@ fn hash_simple(octets: &[u8]) -> u32 {
 unsafe fn hash_pclmulqdq(bin: &[u8]) -> u32 {
     let mut octets = bin;
 "# +
-     format!("    const Q_X: i64 = {}00; // P(x) * x^8", poly_str).as_str() +
+     format!("    const Q_X: i64 = {};", poly_str_simd).as_str() +
+     format!("    const U: i64 = {:#X};", u).as_str() +
+     format!("    const K1: i64 = {:#X};", k1).as_str() +
+     format!("    const K2: i64 = {:#X};", k2).as_str() +
+     format!("    const K3: i64 = {:#X};", k3).as_str() +
+     format!("    const K4: i64 = {:#X};", k4).as_str() +
+     format!("    const K5: i64 = {:#X};", k5).as_str() +
+     format!("    const K6: i64 = {:#X};", k6).as_str() +
 r#"
-    const U: i64 = 0x1F845FE24;
-
-    // see https://stackoverflow.com/questions/21171733/calculating-constants-for-crc32-using-pclmulqdq
-    const K1: i64 = 0x1F428700; // T = 128 * 4 + 64
-    const K2: i64 = 0x467D2400; // T = 128 * 4
-    const K3: i64 = 0x2C8C9D00; // T = 128 + 64
-    const K4: i64 = 0x64E4D700; // T = 128
-    const K5: i64 = 0xFD7E0C00; // T = 96
-    const K6: i64 = 0xD9FE8C00; // T = 64
-
     if octets.len() < 128 {
         return hash_simple(octets);
     }
@@ -81,7 +130,7 @@ r#"
     x1 = _mm_shuffle_epi8(x1, shuf_mask);
     x0 = _mm_shuffle_epi8(x0, shuf_mask);
 "# +
-     format!("    x3 = _mm_xor_si128(x3, _mm_set_epi32({}00i32, 0, 0, 0));", init_str).as_str() +
+     format!("    x3 = _mm_xor_si128(x3, _mm_set_epi32({}i32, 0, 0, 0));", init_str_simd).as_str() +
 r#"
 
     let k1k2 = _mm_set_epi64x(K2, K1);
