@@ -46,6 +46,8 @@ pub fn crc(ts: TokenStream) -> TokenStream {
     let init_str = args.get(1).unwrap();
     let lorem_expected_result = args.get(2).unwrap();
     let lorem_aligned_expected_result = args.get(3).unwrap();
+    let check_expected_result = args.get(4).unwrap();
+    let n = get_n(poly_str);
 
     // Shifted to the left to 32-bits (i.e. with trailing zeroes).
     let poly_str_simd = format!("{:0<11}", poly_str);
@@ -67,8 +69,8 @@ use std::arch::x86_64::*;
 #[cfg(target_arch = "x86")]
 use std::arch::x86::*;
 "#.to_owned() +
-        format!("const POLY: u32 = {};", poly_str).as_str() +
-        format!("const INIT: u32 = {};", init_str).as_str() +
+        format!("const POLY: u64 = {};", poly_str).as_str() +
+        format!("const INIT: u64 = {};", init_str).as_str() +
 r#"
 fn hash(octets: &[u8]) -> u32 {
     if is_x86_feature_detected!("pclmulqdq")
@@ -83,18 +85,24 @@ fn hash(octets: &[u8]) -> u32 {
 }
 
 fn hash_simple(octets: &[u8]) -> u32 {
-    let mut x: u32 = INIT;
+    let mut x: u64 = INIT;
     for octet in octets {
-        x = x ^ ((*octet as u32) << 16);
+"# +
+     format!("        x = x ^ ((*octet as u64) << {});", n - 8).as_str() +
+r#"
         for _ in 0..8 {
             x = x << 1;
-            if x & (0x1000000 as u32) != 0 {
+"# +
+     format!("            if x & ({:#X} as u64) != 0 {{", (1 as u64) << n).as_str() +
+r#"
                 x = x ^ POLY;
             }
         }
     }
 
-    x & 0xFFFFFF
+"# +
+     format!("    (x & {:#X}) as u32", ((1 as u64) << n) - 1).as_str() +
+r#"
 }
 
 #[allow(overflowing_literals)]
@@ -250,6 +258,15 @@ r#"
         let result = unsafe { hash_pclmulqdq(b"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing aaaaaaaaaaaaaaa") };
 "# +
      format!("        assert_eq!(result, {});", lorem_aligned_expected_result).as_str() +
+r#"
+    }
+
+    #[test]
+    pub fn test_check() {
+        // Uses fallback
+        let raw = *b"123456789";
+"# +
+     format!("        assert_eq!(hash_simple(&raw), {});", check_expected_result).as_str() +
 r#"
     }
 
