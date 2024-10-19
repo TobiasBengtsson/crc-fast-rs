@@ -7,8 +7,22 @@ name = "crc-fast-gen"
 version = "0.1.0"
 
 [[package]]
-name = "crc24-opgp-fast"
-version = "0.1.0"
+name = "crc16-cdma2000-fast"
+version = "0.2.0"
+dependencies = [
+ "crc-fast-gen",
+]
+
+[[package]]
+name = "crc24-openpgp-fast"
+version = "0.2.0"
+dependencies = [
+ "crc-fast-gen",
+]
+
+[[package]]
+name = "crc32-mpeg2-fast"
+version = "0.2.0"
 dependencies = [
  "crc-fast-gen",
 ]

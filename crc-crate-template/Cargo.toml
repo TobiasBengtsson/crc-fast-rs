@@ -1,0 +1,7 @@
+[package]
+name = "$PACKAGE_NAME"
+version = "$VERSION"
+edition = "2021"
+
+[dependencies]
+crc-fast-gen = { path = "../crc-fast-gen" }

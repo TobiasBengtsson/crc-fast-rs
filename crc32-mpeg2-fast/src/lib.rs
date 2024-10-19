@@ -1,0 +1,3 @@
+use crc_fast_gen::crc;
+
+crc!(0x104C11DB7, 0xFFFFFFFF, 0xF6AFF7B5, 0x078B1404, 0x0376E6E7);
