@@ -20,6 +20,8 @@ do
     export LOREM_ALIGNED=$(echo $c | cut -d , -f 6)
     export CHECK=$(echo $c | cut -d , -f 7)
 
+    export PACKAGE_NAMESPACE=$(echo "$PACKAGE_NAME" | tr - _)
+
     echo 'Generating crate' "$PACKAGE_NAME"
     cp -rT ./crc-crate-template "./$PACKAGE_NAME"
     find "./$PACKAGE_NAME" -type f -exec sh -c 'envsubst < {} > {}.tmp; mv {}.tmp {}' \;

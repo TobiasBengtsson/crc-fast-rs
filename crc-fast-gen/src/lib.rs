@@ -73,7 +73,7 @@ use std::arch::x86::*;
         format!("const POLY: u64 = {};", poly_str).as_str() +
         format!("const INIT: u64 = {};", init_str).as_str() +
 r#"
-fn hash(octets: &[u8]) -> u32 {
+pub fn hash(octets: &[u8]) -> u32 {
     if is_x86_feature_detected!("pclmulqdq")
         && is_x86_feature_detected!("sse4.1")
     {
@@ -85,7 +85,7 @@ fn hash(octets: &[u8]) -> u32 {
     hash_simple(octets)
 }
 
-fn hash_simple(octets: &[u8]) -> u32 {
+pub fn hash_simple(octets: &[u8]) -> u32 {
     let mut x: u64 = INIT;
     for octet in octets {
 "# +

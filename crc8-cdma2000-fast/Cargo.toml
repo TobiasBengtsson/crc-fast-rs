@@ -5,3 +5,13 @@ edition = "2021"
 
 [dependencies]
 crc-fast-gen = { path = "../crc-fast-gen" }
+
+[dev-dependencies]
+criterion = "0.5"
+
+[lib]
+bench = false
+
+[[bench]]
+name = "fast_vs_fallback"
+harness = false
