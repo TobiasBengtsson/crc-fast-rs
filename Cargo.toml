@@ -1,4 +1,5 @@
 [workspace]
+# WARNING: This file is managed by the gen_crate.sh script
 
 members = [
     "crc-fast-gen",

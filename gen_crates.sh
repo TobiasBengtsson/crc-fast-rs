@@ -1,6 +1,7 @@
 export VERSION=$(cat version.txt)
 
 echo '[workspace]' > Cargo.toml
+echo '# WARNING: This file is managed by the gen_crate.sh script' >> Cargo.toml
 echo '' >> Cargo.toml
 echo 'members = [' >> Cargo.toml
 echo '    "crc-fast-gen",' >> Cargo.toml
