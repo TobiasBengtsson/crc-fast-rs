@@ -3,6 +3,7 @@
 
 members = [
     "crc-fast-gen",
+    "crc8-cdma2000-fast",
     "crc16-cdma2000-fast",
     "crc16-en13757-fast",
     "crc24-openpgp-fast",

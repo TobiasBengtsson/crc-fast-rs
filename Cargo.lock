@@ -33,3 +33,10 @@ version = "0.2.0"
 dependencies = [
  "crc-fast-gen",
 ]
+
+[[package]]
+name = "crc8-cdma2000-fast"
+version = "0.2.0"
+dependencies = [
+ "crc-fast-gen",
+]
