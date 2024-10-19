@@ -15,9 +15,10 @@ do
     fi
     export POLY=$(echo $c | cut -d , -f 2)
     export INIT=$(echo $c | cut -d , -f 3)
-    export LOREM=$(echo $c | cut -d , -f 4)
-    export LOREM_ALIGNED=$(echo $c | cut -d , -f 5)
-    export CHECK=$(echo $c | cut -d , -f 6)
+    export OUTPUT_XOR=$(echo $c | cut -d , -f 4)
+    export LOREM=$(echo $c | cut -d , -f 5)
+    export LOREM_ALIGNED=$(echo $c | cut -d , -f 6)
+    export CHECK=$(echo $c | cut -d , -f 7)
 
     echo 'Generating crate' "$PACKAGE_NAME"
     cp -rT ./crc-crate-template "./$PACKAGE_NAME"

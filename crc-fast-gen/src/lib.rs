@@ -44,9 +44,10 @@ pub fn crc(ts: TokenStream) -> TokenStream {
     let args: Vec<&str> = args_str.split(", ").collect();
     let poly_str = args.get(0).unwrap();
     let init_str = args.get(1).unwrap();
-    let lorem_expected_result = args.get(2).unwrap();
-    let lorem_aligned_expected_result = args.get(3).unwrap();
-    let check_expected_result = args.get(4).unwrap();
+    let output_xor = args.get(2).unwrap();
+    let lorem_expected_result = args.get(3).unwrap();
+    let lorem_aligned_expected_result = args.get(4).unwrap();
+    let check_expected_result = args.get(5).unwrap();
     let n = get_n(poly_str);
 
     // Shifted to the left to 32-bits (i.e. with trailing zeroes).
@@ -101,7 +102,7 @@ r#"
     }
 
 "# +
-     format!("    (x & {:#X}) as u32", ((1 as u64) << n) - 1).as_str() +
+     format!("    ((x & {:#X}) ^ {}) as u32", ((1 as u64) << n) - 1, output_xor).as_str() +
 r#"
 }
 
@@ -194,10 +195,11 @@ r#"
     let t2 = _mm_clmulepi64_si128(_mm_srli_si128::<4>(t1), pu, 0x00);
 
     let x = _mm_xor_si128(x, t2);
-    let c = _mm_extract_epi32(x, 0) as u32;
+    let mut c = _mm_extract_epi32(x, 0) as u32;
 
 "# +
-     format!("    c >> {}", 32 - n).as_str() +
+     format!("    c = c >> {};", 32 - n).as_str() +
+     format!("    c ^ {}", output_xor).as_str() +
 r#"
 }
 

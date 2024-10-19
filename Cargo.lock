@@ -14,6 +14,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "crc16-en13757-fast"
+version = "0.2.0"
+dependencies = [
+ "crc-fast-gen",
+]
+
+[[package]]
 name = "crc24-openpgp-fast"
 version = "0.2.0"
 dependencies = [
