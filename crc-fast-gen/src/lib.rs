@@ -2,13 +2,16 @@ use proc_macro::TokenStream;
 
 #[proc_macro]
 pub fn crc(ts: TokenStream) -> TokenStream {
-    r#"
+    let poly = ts.to_string();
+    (r#"
 #[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::*;
 
 #[cfg(target_arch = "x86")]
 use std::arch::x86::*;
-
+"#.to_owned() +
+        format!("const POLY: u32 = {};", poly).as_str() +
+r#"
 fn hash(octets: &[u8]) -> u32 {
     if is_x86_feature_detected!("pclmulqdq")
         && is_x86_feature_detected!("sse4.1")
@@ -28,7 +31,7 @@ fn hash_simple(octets: &[u8]) -> u32 {
         for _ in 0..8 {
             x = x << 1;
             if x & (0x1000000 as u32) != 0 {
-                x = x ^ 0x1864CFB;
+                x = x ^ POLY;
             }
         }
     }
@@ -41,7 +44,9 @@ fn hash_simple(octets: &[u8]) -> u32 {
 #[target_feature(enable = "sse4.1")]
 unsafe fn hash_pclmulqdq(bin: &[u8]) -> u32 {
     let mut octets = bin;
-    const Q_X: i64 = 0x1864CFB00; // P(x) * x^8
+"# +
+     format!("    const Q_X: i64 = {}00; // P(x) * x^8", poly).as_str() +
+r#"
     const U: i64 = 0x1F845FE24;
 
     // see https://stackoverflow.com/questions/21171733/calculating-constants-for-crc32-using-pclmulqdq
@@ -231,5 +236,5 @@ mod tests {
         assert_eq!(result, expected_result);
     }
 }
-    "#.parse().unwrap()
+    "#).parse().unwrap()
 }
