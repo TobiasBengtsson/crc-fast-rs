@@ -2,7 +2,10 @@ use proc_macro::TokenStream;
 
 #[proc_macro]
 pub fn crc(ts: TokenStream) -> TokenStream {
-    let poly = ts.to_string();
+    let args_str = ts.to_string();
+    let args: Vec<&str> = args_str.split(", ").collect();
+    let poly_str = args.get(0).unwrap();
+    let init_str = args.get(1).unwrap();
     (r#"
 #[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::*;
@@ -10,7 +13,8 @@ use std::arch::x86_64::*;
 #[cfg(target_arch = "x86")]
 use std::arch::x86::*;
 "#.to_owned() +
-        format!("const POLY: u32 = {};", poly).as_str() +
+        format!("const POLY: u32 = {};", poly_str).as_str() +
+        format!("const INIT: u32 = {};", init_str).as_str() +
 r#"
 fn hash(octets: &[u8]) -> u32 {
     if is_x86_feature_detected!("pclmulqdq")
@@ -25,7 +29,7 @@ fn hash(octets: &[u8]) -> u32 {
 }
 
 fn hash_simple(octets: &[u8]) -> u32 {
-    let mut x: u32 = 0xB704CE;
+    let mut x: u32 = INIT;
     for octet in octets {
         x = x ^ ((*octet as u32) << 16);
         for _ in 0..8 {
@@ -45,7 +49,7 @@ fn hash_simple(octets: &[u8]) -> u32 {
 unsafe fn hash_pclmulqdq(bin: &[u8]) -> u32 {
     let mut octets = bin;
 "# +
-     format!("    const Q_X: i64 = {}00; // P(x) * x^8", poly).as_str() +
+     format!("    const Q_X: i64 = {}00; // P(x) * x^8", poly_str).as_str() +
 r#"
     const U: i64 = 0x1F845FE24;
 
@@ -76,8 +80,9 @@ r#"
     x2 = _mm_shuffle_epi8(x2, shuf_mask);
     x1 = _mm_shuffle_epi8(x1, shuf_mask);
     x0 = _mm_shuffle_epi8(x0, shuf_mask);
-
-    x3 = _mm_xor_si128(x3, _mm_set_epi32(0xB704CE00i32, 0, 0, 0));
+"# +
+     format!("    x3 = _mm_xor_si128(x3, _mm_set_epi32({}00i32, 0, 0, 0));", init_str).as_str() +
+r#"
 
     let k1k2 = _mm_set_epi64x(K2, K1);
     while octets.len() >= 128 {
@@ -182,14 +187,14 @@ mod tests {
     #[test]
     pub fn test_lorem() {
         // Lorem ipsum
-        let result = hash(b"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing");
+        let result = unsafe {hash_pclmulqdq(b"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing") };
         assert_eq!(result, 0x470B16);
     }
 
     #[test]
     pub fn test_lorem_aligned() {
         // Lorem ipsum padded to 128-bits
-        let result = hash(b"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing aaaaaaaaaaaaaaa");
+        let result = unsafe { hash_pclmulqdq(b"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing aaaaaaaaaaaaaaa") };
         assert_eq!(result, 0xE8DDBB);
     }
 
@@ -198,7 +203,7 @@ mod tests {
         // Uses fallback
         let raw = b"12345678".repeat(15);
         let expected_result = hash_simple(&raw);
-        let result = hash(&raw);
+        let result = unsafe { hash_pclmulqdq(&raw) };
         assert_eq!(result, expected_result);
     }
 
@@ -206,7 +211,7 @@ mod tests {
     pub fn test_128_bytes() {
         let raw = b"12345678".repeat(16);
         let expected_result = hash_simple(&raw);
-        let result = hash(&raw);
+        let result = unsafe { hash_pclmulqdq(&raw) };
         assert_eq!(result, expected_result);
     }
 
@@ -215,7 +220,7 @@ mod tests {
         // Large enough to fold multiple times, will need padding
         let raw = b"abc123)(#".repeat(243);
         let expected_result = hash_simple(&raw);
-        let result = hash(&raw);
+        let result = unsafe { hash_pclmulqdq(&raw) };
         assert_eq!(result, expected_result);
     }
 
@@ -224,7 +229,7 @@ mod tests {
         // Random "larger" number
         let raw = b"1jn5?`=Z".repeat(10007);
         let expected_result = hash_simple(&raw);
-        let result = hash(&raw);
+        let result = unsafe { hash_pclmulqdq(&raw) };
         assert_eq!(result, expected_result);
     }
 
@@ -232,7 +237,7 @@ mod tests {
     pub fn test_zero_data() {
         let raw = [0; 10007];
         let expected_result = hash_simple(&raw);
-        let result = hash(&raw);
+        let result = unsafe { hash_pclmulqdq(&raw) };
         assert_eq!(result, expected_result);
     }
 }
