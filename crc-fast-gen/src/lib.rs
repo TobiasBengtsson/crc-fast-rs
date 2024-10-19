@@ -196,7 +196,9 @@ r#"
     let x = _mm_xor_si128(x, t2);
     let c = _mm_extract_epi32(x, 0) as u32;
 
-    c >> 8
+"# +
+     format!("    c >> {}", 32 - n).as_str() +
+r#"
 }
 
 #[target_feature(enable = "pclmulqdq")]
