@@ -1,6 +1,6 @@
 [workspace]
 # WARNING: This file is managed by the gen_crate.sh script
-
+resolver = "2"
 members = [
     "crc-fast-gen",
     "crc8-cdma2000-fast",
