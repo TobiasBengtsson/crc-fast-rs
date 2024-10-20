@@ -134,6 +134,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "crc32-aixm-fast"
+version = "0.2.0"
+dependencies = [
+ "crc-fast-gen 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "criterion",
+]
+
+[[package]]
+name = "crc32-bzip2-fast"
+version = "0.2.0"
+dependencies = [
+ "crc-fast-gen 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "criterion",
+]
+
+[[package]]
 name = "crc32-mpeg2-fast"
 version = "0.2.0"
 dependencies = [
