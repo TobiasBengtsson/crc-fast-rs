@@ -106,10 +106,10 @@ pub fn crc(ts: TokenStream) -> TokenStream {
 
     (r#"
 #[cfg(target_arch = "x86_64")]
-use std::arch::x86_64::*;
+use core::arch::x86_64::*;
 
 #[cfg(target_arch = "x86")]
-use std::arch::x86::*;
+use core::arch::x86::*;
 "#.to_owned() +
         format!("const POLY: u64 = {};", poly_str).as_str() +
         format!("const INIT: u64 = {};", init_str).as_str() +
@@ -123,8 +123,9 @@ r#"
 /// Currently, SIMD is implemented for x86-64 CPU:s with pclmulqdq and sse4.1
 /// support.
 pub fn hash(octets: &[u8]) -> u32 {
-    if is_x86_feature_detected!("pclmulqdq")
-        && is_x86_feature_detected!("sse4.1")
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    if core_detect::is_x86_feature_detected!("pclmulqdq")
+        && core_detect::is_x86_feature_detected!("sse4.1")
     {
         unsafe {
             return hash_pclmulqdq(octets);
