@@ -3,7 +3,7 @@ name = "crc24-openpgp-fast"
 authors = ["Tobias Bengtsson <me@tobiasbengtsson.se>"]
 description = "SIMD-powered implementation of CRC-24/OPENPGP (CRC-24/Radix64)"
 repository = "https://github.com/TobiasBengtsson/crc-fast-rs"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 license = "MIT"
 keywords = ["crc", "checksum", "hash", "simd"]
@@ -13,7 +13,8 @@ default = ["table-fallback"]
 table-fallback = []
 
 [dependencies]
-crc-fast-gen = "0.2.0"
+crc-fast-gen = "0.3.0"
+core_detect = "1"
 
 [dev-dependencies]
 criterion = {version = "0.5", features = ["html_reports"] }
