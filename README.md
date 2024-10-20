@@ -23,6 +23,24 @@ The general repository versions is typically bumped on changes to the generating
 logic. It is stored in [version.txt](version.txt) used in the generation of the
 crates.
 
+## Benchmarks
+
+Performance is the main raison d'être of this project. Therefore there are
+plenty of benchmarks of the CRC algorithms.
+
+Each CRC implementation is benchmarked for SIMD, table lookup, and simple loop
+peformance using criterion. Input size in bytes range from 128 to 64k in powers
+of 2.
+
+In the future (TODO), the benchmarks will be run on a set of
+architectures/families and the results published.
+
+### Example
+
+```
+~/crc-fast-rs $ cargo bench
+```
+
 ## Questions
 
 **Why one crate per algorithm and not just one crate?**
