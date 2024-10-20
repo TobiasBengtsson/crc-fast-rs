@@ -22,12 +22,13 @@ do
     then
 	continue
     fi
-    export POLY=$(echo $c | cut -d , -f 2)
-    export INIT=$(echo $c | cut -d , -f 3)
-    export OUTPUT_XOR=$(echo $c | cut -d , -f 4)
-    export LOREM=$(echo $c | cut -d , -f 5)
-    export LOREM_ALIGNED=$(echo $c | cut -d , -f 6)
-    export CHECK=$(echo $c | cut -d , -f 7)
+    export CRC_NAME=$(echo $c | cut -d , -f 2)
+    export POLY=$(echo $c | cut -d , -f 3)
+    export INIT=$(echo $c | cut -d , -f 4)
+    export OUTPUT_XOR=$(echo $c | cut -d , -f 5)
+    export LOREM=$(echo $c | cut -d , -f 6)
+    export LOREM_ALIGNED=$(echo $c | cut -d , -f 7)
+    export CHECK=$(echo $c | cut -d , -f 8)
 
     export PACKAGE_NAMESPACE=$(echo "$PACKAGE_NAME" | tr - _)
 
