@@ -12,6 +12,7 @@ members = [
     "crc8-i4321-fast",
     "crc8-icode-fast",
     "crc8-lte-fast",
+    "crc8-mifaremad-fast",
     "crc16-cdma2000-fast",
     "crc16-en13757-fast",
     "crc24-openpgp-fast",
