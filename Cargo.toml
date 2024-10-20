@@ -45,4 +45,5 @@ members = [
     "crc32-bzip2-fast",
     "crc32-cksum-fast",
     "crc32-mpeg2-fast",
+    "crc32-xfer-fast",
 ]
