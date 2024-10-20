@@ -1,6 +1,7 @@
 # crc-fast-rs
 
-This is a CRC algorithm generator with SIMD support.
+This is a CRC algorithm generator with SIMD support. Apart from the generator,
+contains the cargo roots for all generated CRC algorithms.
 
 ## How the repository works
 
@@ -10,6 +11,17 @@ template directory `crc-crate-template` based on the algorithm list in
 
 The generated `lib.rs` file contains a single expression `crc!(...)` and a
 dependency on the `crc-fast-gen` crate which contains the proc macro logic.
+
+## Versioning
+
+In general, the crates are in sync with the version of this repository. For
+hotfixes to individual crates, patch versions may be applied to only the
+affected crate(s). If so, the next bump of the general repository will skip
+those versions for clarity.
+
+The general repository versions is typically bumped on changes to the generating
+logic. It is stored in [version.txt](version.txt) used in the generation of the
+crates.
 
 ## Questions
 
