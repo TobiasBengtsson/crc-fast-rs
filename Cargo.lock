@@ -296,6 +296,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "crc24-interlaken-fast"
+version = "0.3.0"
+dependencies = [
+ "core_detect",
+ "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "criterion",
+]
+
+[[package]]
 name = "crc24-openpgp-fast"
 version = "0.3.0"
 dependencies = [
