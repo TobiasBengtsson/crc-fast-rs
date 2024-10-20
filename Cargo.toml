@@ -43,5 +43,6 @@ members = [
     "crc24-os9-fast",
     "crc32-aixm-fast",
     "crc32-bzip2-fast",
+    "crc32-cksum-fast",
     "crc32-mpeg2-fast",
 ]
