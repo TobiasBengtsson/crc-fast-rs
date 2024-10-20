@@ -1,5 +1,8 @@
 [package]
 name = "crc-fast-gen"
+authors = ["Tobias Bengtsson <me@tobiasbengtsson.se>"]
+description = "A proc-macro generating SIMD/table/loop CRC algorithms"
+repository = "https://github.com/TobiasBengtsson/crc-fast-rs"
 version = "0.2.0"
 edition = "2021"
 license = "MIT"
