@@ -35,6 +35,7 @@ members = [
     "crc16-umts-fast",
     "crc16-xmodem-fast",
     "crc24-flexraya-fast",
+    "crc24-flexrayb-fast",
     "crc24-openpgp-fast",
     "crc32-aixm-fast",
     "crc32-bzip2-fast",
