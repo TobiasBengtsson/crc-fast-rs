@@ -14,6 +14,7 @@ members = [
     "crc8-lte-fast",
     "crc8-mifaremad-fast",
     "crc8-nrsc5-fast",
+    "crc8-opensafety-fast",
     "crc16-cdma2000-fast",
     "crc16-en13757-fast",
     "crc24-openpgp-fast",
