@@ -114,6 +114,14 @@ use std::arch::x86::*;
         format!("const POLY: u64 = {};", poly_str).as_str() +
         format!("const INIT: u64 = {};", init_str).as_str() +
 r#"
+
+/// Calculate the CRC checksum of the octets using an SIMD implementation if
+/// available. If not, a fallback algorithm is used. If the table-fallback
+/// feature is enabled this will be a lookup table based algorithm, otherwise a
+/// simple loop is used (slowest).
+///
+/// Currently, SIMD is implemented for x86-64 CPU:s with pclmulqdq and sse4.1
+/// support.
 pub fn hash(octets: &[u8]) -> u32 {
     if is_x86_feature_detected!("pclmulqdq")
         && is_x86_feature_detected!("sse4.1")
@@ -134,6 +142,8 @@ fn hash_fallback(octets: &[u8]) -> u32 {
     }
 }
 
+/// Calculate the CRC checksum of the octets using a simple loop algorithm
+/// (slow).
 pub fn hash_simple(octets: &[u8]) -> u32 {
     let mut x: u64 = INIT;
     for octet in octets {
@@ -162,6 +172,7 @@ const CRC_TABLE: [u64; 256] = [
 r#"
 ];
 
+/// Calculate the CRC checksum of the octets using a table lookup algorithm.
 #[cfg(feature = "table-fallback")]
 pub fn hash_table(octets: &[u8]) -> u32 {
     let mut x = INIT;
