@@ -2,6 +2,7 @@
 name = "$PACKAGE_NAME"
 version = "$VERSION"
 edition = "2021"
+license = "MIT"
 
 [features]
 default = ["table-fallback"]

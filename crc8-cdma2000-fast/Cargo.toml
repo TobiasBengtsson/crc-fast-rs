@@ -2,6 +2,7 @@
 name = "crc8-cdma2000-fast"
 version = "0.2.0"
 edition = "2021"
+license = "MIT"
 
 [features]
 default = ["table-fallback"]
