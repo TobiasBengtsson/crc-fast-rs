@@ -38,6 +38,7 @@ members = [
     "crc24-flexrayb-fast",
     "crc24-interlaken-fast",
     "crc24-ltea-fast",
+    "crc24-lteb-fast",
     "crc24-openpgp-fast",
     "crc32-aixm-fast",
     "crc32-bzip2-fast",
