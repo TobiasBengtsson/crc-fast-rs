@@ -23,6 +23,7 @@ members = [
     "crc16-dectx-fast",
     "crc16-en13757-fast",
     "crc16-genibus-fast",
+    "crc16-gsm-fast",
     "crc24-openpgp-fast",
     "crc32-aixm-fast",
     "crc32-bzip2-fast",
