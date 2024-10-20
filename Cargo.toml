@@ -33,6 +33,7 @@ members = [
     "crc16-t10dif-fast",
     "crc16-teledisk-fast",
     "crc16-umts-fast",
+    "crc16-xmodem-fast",
     "crc24-openpgp-fast",
     "crc32-aixm-fast",
     "crc32-bzip2-fast",
