@@ -30,6 +30,7 @@ members = [
     "crc16-opensafetyb-fast",
     "crc16-profibus-fast",
     "crc16-spifujitsu-fast",
+    "crc16-t10dif-fast",
     "crc24-openpgp-fast",
     "crc32-aixm-fast",
     "crc32-bzip2-fast",
