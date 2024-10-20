@@ -12,6 +12,25 @@ template directory `crc-crate-template` based on the algorithm list in
 The generated `lib.rs` file contains a single expression `crc!(...)` and a
 dependency on the `crc-fast-gen` crate which contains the proc macro logic.
 
+### Example
+
+In this example, make some change to the template `Cargo.toml` file and re-
+generate the crates.
+
+```
+~/crc-fast-rs $ vim crc-crate-template/Cargo.toml
+(make changes and save)
+~/crc-fast-rs $ ./gen_crates.sh
+~/crc-fast-rs $ git diff
+```
+
+When the general version is bumped, the crates have to be re-generated.
+
+```
+~/crc-fast-rs $ echo 'v0.2.1' > version.txt
+~/crc-fast-rs $ ./gen_crates.sh
+```
+
 ## Versioning
 
 In general, the crates are in sync with the version of this repository. For
