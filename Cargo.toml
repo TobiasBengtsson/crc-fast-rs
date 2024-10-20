@@ -20,6 +20,7 @@ members = [
     "crc16-cms-fast",
     "crc16-dds110-fast",
     "crc16-dectr-fast",
+    "crc16-dectx-fast",
     "crc16-en13757-fast",
     "crc24-openpgp-fast",
     "crc32-aixm-fast",
