@@ -104,10 +104,16 @@ name = "crc-fast-gen"
 version = "0.2.0"
 
 [[package]]
+name = "crc-fast-gen"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d380b4c1e107f9898deee53d074deae065d0b2608e5753b34d93df72636a2dd4"
+
+[[package]]
 name = "crc16-cdma2000-fast"
 version = "0.2.0"
 dependencies = [
- "crc-fast-gen",
+ "crc-fast-gen 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
@@ -115,7 +121,7 @@ dependencies = [
 name = "crc16-en13757-fast"
 version = "0.2.0"
 dependencies = [
- "crc-fast-gen",
+ "crc-fast-gen 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
@@ -123,7 +129,7 @@ dependencies = [
 name = "crc24-openpgp-fast"
 version = "0.2.0"
 dependencies = [
- "crc-fast-gen",
+ "crc-fast-gen 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
@@ -131,7 +137,7 @@ dependencies = [
 name = "crc32-mpeg2-fast"
 version = "0.2.0"
 dependencies = [
- "crc-fast-gen",
+ "crc-fast-gen 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
@@ -139,7 +145,7 @@ dependencies = [
 name = "crc8-cdma2000-fast"
 version = "0.2.0"
 dependencies = [
- "crc-fast-gen",
+ "crc-fast-gen 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
