@@ -40,6 +40,7 @@ members = [
     "crc24-ltea-fast",
     "crc24-lteb-fast",
     "crc24-openpgp-fast",
+    "crc24-os9-fast",
     "crc32-aixm-fast",
     "crc32-bzip2-fast",
     "crc32-mpeg2-fast",
