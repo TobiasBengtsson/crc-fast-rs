@@ -7,6 +7,7 @@ members = [
     "crc8-cdma2000-fast",
     "crc8-dvbs2-fast",
     "crc8-gsma-fast",
+    "crc8-gsmb-fast",
     "crc16-cdma2000-fast",
     "crc16-en13757-fast",
     "crc24-openpgp-fast",
