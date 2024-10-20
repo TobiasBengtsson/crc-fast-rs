@@ -134,6 +134,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "crc16-dds110-fast"
+version = "0.3.0"
+dependencies = [
+ "core_detect",
+ "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "criterion",
+]
+
+[[package]]
 name = "crc16-en13757-fast"
 version = "0.3.0"
 dependencies = [
