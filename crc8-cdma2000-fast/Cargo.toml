@@ -3,6 +3,10 @@ name = "crc8-cdma2000-fast"
 version = "0.2.0"
 edition = "2021"
 
+[features]
+default = ["table-fallback"]
+table-fallback = []
+
 [dependencies]
 crc-fast-gen = { path = "../crc-fast-gen" }
 
@@ -13,5 +17,5 @@ criterion = {version = "0.5", features = ["html_reports"] }
 bench = false
 
 [[bench]]
-name = "fast_vs_fallback"
+name = "simd_vs_table_vs_simple"
 harness = false

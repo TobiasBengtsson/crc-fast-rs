@@ -4,12 +4,17 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("$PACKAGE_NAMESPACE");
     for nbytes in [128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536].iter() {
         group.bench_with_input(
-            BenchmarkId::new("Fast", nbytes),
+            BenchmarkId::new("SIMD", nbytes),
             nbytes,
             |b, nbytes| b.iter(|| $PACKAGE_NAMESPACE::hash(&(b"F".repeat(*nbytes)))),
         );
         group.bench_with_input(
-            BenchmarkId::new("Fallback", nbytes),
+            BenchmarkId::new("Table", nbytes),
+            nbytes,
+            |b, nbytes| b.iter(|| $PACKAGE_NAMESPACE::hash_table(&(b"F".repeat(*nbytes)))),
+        );
+        group.bench_with_input(
+            BenchmarkId::new("Simple", nbytes),
             nbytes,
             |b, nbytes| b.iter(|| $PACKAGE_NAMESPACE::hash_simple(&(b"F".repeat(*nbytes)))),
         );

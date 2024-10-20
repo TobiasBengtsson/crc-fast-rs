@@ -1,6 +1,7 @@
 use proc_macro::TokenStream;
 
 // Adapted from https://stackoverflow.com/q/21171733
+// t=exponent, n=crc bits, m=mask, q=quotient, r=remainder
 fn calc_const(mut t: u32, mut poly: u64) -> (u64, u64) {
     let mut n = get_n(format!("{:#X}", poly).as_str());
     if t < n {
@@ -38,6 +39,34 @@ fn get_n(poly_str: &str) -> u32 {
     n as u32
 }
 
+fn get_table(n: u32, poly: u64) -> String {
+    let mut table: Vec<u32> = vec![];
+    // Table entries are just calculating the CRC of single bytes (0-255)
+    // (without init, output XOR)
+    for i in 0x0..=0xFF {
+        let mut x = i << (n - 8);
+        for _ in 0..8 {
+            x = x << 1;
+            if x & ((1 as u64) << n) != 0 {
+                x = x ^ poly
+            }
+        }
+        x = x & (((1 as u64) << n) - 1);
+        table.push(x as u32);
+    }
+
+    // 64 rows * (4 spaces + 4(n/4) + hex chars + (2 * 4) 0x:s + 4 commas + 3 spaces + 1 newline)
+    let mut table_str = String::with_capacity(64 * (n + 28) as usize);
+    let rows = table.chunks(4);
+    for row in rows {
+        table_str.push_str("    ");
+        table_str.push_str(row.iter().map(|entry| format!("{:#0width$X},", entry, width = (2 + n / 4) as usize)).collect::<Vec<String>>().join(" ").as_str());
+        table_str.push_str("\n");
+    }
+
+    table_str
+}
+
 #[proc_macro]
 pub fn crc(ts: TokenStream) -> TokenStream {
     let args_str = ts.to_string();
@@ -50,18 +79,20 @@ pub fn crc(ts: TokenStream) -> TokenStream {
     let check_expected_result = args.get(5).unwrap();
     let n = get_n(poly_str);
 
+    let poly = u64::from_str_radix(poly_str.strip_prefix("0x").unwrap(), 16).unwrap();
+
     // Shifted to the left to 32-bits (i.e. with trailing zeroes).
     let poly_str_simd = format!("{:0<11}", poly_str);
     let init_str_simd = format!("{:0<10}", init_str);
 
     // Calculate constants used in SIMD
-    let poly = u64::from_str_radix(poly_str_simd.strip_prefix("0x").unwrap(), 16).unwrap();
-    let (u, k6) = calc_const(64, poly);
-    let (_, k5) = calc_const(96, poly);
-    let (_, k4) = calc_const(128, poly);
-    let (_, k3) = calc_const(128 + 64, poly);
-    let (_, k2) = calc_const(128 * 4, poly);
-    let (_, k1) = calc_const(128 * 4 + 64, poly);
+    let poly_simd = u64::from_str_radix(poly_str_simd.strip_prefix("0x").unwrap(), 16).unwrap();
+    let (u, k6) = calc_const(64, poly_simd);
+    let (_, k5) = calc_const(96, poly_simd);
+    let (_, k4) = calc_const(128, poly_simd);
+    let (_, k3) = calc_const(128 + 64, poly_simd);
+    let (_, k2) = calc_const(128 * 4, poly_simd);
+    let (_, k1) = calc_const(128 * 4 + 64, poly_simd);
 
     (r#"
 #[cfg(target_arch = "x86_64")]
@@ -82,7 +113,15 @@ pub fn hash(octets: &[u8]) -> u32 {
         }
     }
 
-    hash_simple(octets)
+    hash_fallback(octets)
+}
+
+fn hash_fallback(octets: &[u8]) -> u32 {
+    if cfg!(feature = "table-fallback") {
+        hash_table(octets)
+    } else {
+        hash_simple(octets)
+    }
 }
 
 pub fn hash_simple(octets: &[u8]) -> u32 {
@@ -106,6 +145,27 @@ r#"
 r#"
 }
 
+#[cfg(feature = "table-fallback")]
+const CRC_TABLE: [u64; 256] = [
+"# +
+     format!("{}", get_table(n, poly)).as_str() +
+r#"
+];
+
+#[cfg(feature = "table-fallback")]
+pub fn hash_table(octets: &[u8]) -> u32 {
+    let mut x = INIT;
+    for octet in octets {
+"# +
+     format!("        let index = ((*octet as u64) ^ (x >> {})) & 0xFF;", n - 8).as_str() +
+r#"
+        x = (x << 8) ^ CRC_TABLE[index as usize];
+    }
+"# +
+     format!("    ((x & {:#X}) ^ {}) as u32", ((1 as u64) << n) - 1, output_xor).as_str() +
+r#"
+}
+
 #[allow(overflowing_literals)]
 #[target_feature(enable = "pclmulqdq")]
 #[target_feature(enable = "sse4.1")]
@@ -122,7 +182,7 @@ unsafe fn hash_pclmulqdq(bin: &[u8]) -> u32 {
      format!("    const K6: i64 = {:#X};", k6).as_str() +
 r#"
     if octets.len() < 128 {
-        return hash_simple(octets);
+        return hash_fallback(octets);
     }
 
     let shuf_mask = _mm_setr_epi8(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
@@ -247,30 +307,72 @@ unsafe fn reduce128(a: __m128i, b: __m128i, keys: __m128i) -> __m128i {
 mod tests {
     use super::*;
 
+    const LOREM: &[u8] = b"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing";
+
+    // Lorem ipsum padded to 128-bit boundary
+    const LOREM_ALIGNED: &[u8] = b"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing aaaaaaaaaaaaaaa";
+
     #[test]
-    pub fn test_lorem() {
-        // Lorem ipsum
-        let result = unsafe {hash_pclmulqdq(b"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing") };
+    pub fn test_lorem_simd() {
+        let result = unsafe {hash_pclmulqdq(LOREM) };
 "# +
      format!("        assert_eq!(result, {});", lorem_expected_result).as_str() +
 r#"
     }
 
     #[test]
-    pub fn test_lorem_aligned() {
-        // Lorem ipsum padded to 128-bits
-        let result = unsafe { hash_pclmulqdq(b"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing aaaaaaaaaaaaaaa") };
+    pub fn test_lorem_table() {
+        let result = hash_table(LOREM);
+"# +
+     format!("        assert_eq!(result, {});", lorem_expected_result).as_str() +
+r#"
+    }
+
+    #[test]
+    pub fn test_lorem_simple() {
+        let result = hash_simple(LOREM);
+"# +
+     format!("        assert_eq!(result, {});", lorem_expected_result).as_str() +
+r#"
+    }
+
+    #[test]
+    pub fn test_lorem_aligned_simd() {
+        let result = unsafe { hash_pclmulqdq(LOREM_ALIGNED) };
 "# +
      format!("        assert_eq!(result, {});", lorem_aligned_expected_result).as_str() +
 r#"
     }
 
     #[test]
-    pub fn test_check() {
-        // Uses fallback
+    pub fn test_lorem_aligned_table() {
+        let result = hash_table(LOREM_ALIGNED);
+"# +
+     format!("        assert_eq!(result, {});", lorem_aligned_expected_result).as_str() +
+r#"
+    }
+
+    #[test]
+    pub fn test_lorem_aligned_simple() {
+        let result = hash_simple(LOREM_ALIGNED);
+"# +
+     format!("        assert_eq!(result, {});", lorem_aligned_expected_result).as_str() +
+r#"
+    }
+
+    #[test]
+    pub fn test_check_simple() {
         let raw = *b"123456789";
 "# +
      format!("        assert_eq!(hash_simple(&raw), {});", check_expected_result).as_str() +
+r#"
+    }
+
+    #[test]
+    pub fn test_check_table() {
+        let raw = *b"123456789";
+"# +
+     format!("        assert_eq!(hash_table(&raw), {});", check_expected_result).as_str() +
 r#"
     }
 
