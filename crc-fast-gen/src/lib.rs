@@ -188,6 +188,7 @@ r#"
 r#"
 }
 
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 #[allow(overflowing_literals)]
 #[target_feature(enable = "pclmulqdq")]
 #[target_feature(enable = "sse4.1")]
@@ -285,6 +286,7 @@ r#"
 r#"
 }
 
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 #[target_feature(enable = "pclmulqdq")]
 #[target_feature(enable = "sse4.1")]
 unsafe fn fold_by_4_128(
@@ -317,6 +319,7 @@ unsafe fn fold_by_4_128(
     (x3, x2, x1, x0)
 }
 
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 #[target_feature(enable = "pclmulqdq")]
 #[target_feature(enable = "sse4.1")]
 unsafe fn reduce128(a: __m128i, b: __m128i, keys: __m128i) -> __m128i {
@@ -334,8 +337,9 @@ mod tests {
     // Lorem ipsum padded to 128-bit boundary
     const LOREM_ALIGNED: &[u8] = b"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing aaaaaaaaaaaaaaa";
 
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     #[test]
-    pub fn test_lorem_simd() {
+    pub fn test_lorem_pclmulqdq() {
         let result = unsafe {hash_pclmulqdq(LOREM) };
 "# +
      format!("        assert_eq!(result, {});", lorem_expected_result).as_str() +
@@ -358,8 +362,9 @@ r#"
 r#"
     }
 
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     #[test]
-    pub fn test_lorem_aligned_simd() {
+    pub fn test_lorem_aligned_pclmulqdq() {
         let result = unsafe { hash_pclmulqdq(LOREM_ALIGNED) };
 "# +
      format!("        assert_eq!(result, {});", lorem_aligned_expected_result).as_str() +
@@ -398,6 +403,7 @@ r#"
 r#"
     }
 
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     #[test]
     pub fn test_120_bytes() {
         // Uses fallback
@@ -407,6 +413,7 @@ r#"
         assert_eq!(result, expected_result);
     }
 
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     #[test]
     pub fn test_128_bytes() {
         let raw = b"12345678".repeat(16);
@@ -415,6 +422,7 @@ r#"
         assert_eq!(result, expected_result);
     }
 
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     #[test]
     pub fn test_2187_bytes() {
         // Large enough to fold multiple times, will need padding
@@ -424,6 +432,7 @@ r#"
         assert_eq!(result, expected_result);
     }
 
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     #[test]
     pub fn test_80056_bytes() {
         // Random "larger" number
@@ -433,6 +442,7 @@ r#"
         assert_eq!(result, expected_result);
     }
 
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     #[test]
     pub fn test_zero_data() {
         let raw = [0; 10007];
