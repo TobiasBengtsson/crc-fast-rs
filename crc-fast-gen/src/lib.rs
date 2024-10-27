@@ -229,19 +229,19 @@ r#"
 
     let k1k2 = _mm_set_epi64x(K2, K1);
     while octets.len() >= 128 {
-        (x3, x2, x1, x0) = fold_by_4_128(x3, x2, x1, x0, k1k2, shuf_mask, &mut octets);
+        (x3, x2, x1, x0) = fold_by_4_128_x86(x3, x2, x1, x0, k1k2, shuf_mask, &mut octets);
     }
 
     let k3k4 = _mm_set_epi64x(K4, K3);
-    let mut x = reduce128(x3, x2, k3k4);
-    x = reduce128(x, x1, k3k4);
-    x = reduce128(x, x0, k3k4);
+    let mut x = reduce128_x86(x3, x2, k3k4);
+    x = reduce128_x86(x, x1, k3k4);
+    x = reduce128_x86(x, x0, k3k4);
 
     while octets.len() >= 16 {
         let y = _mm_loadu_si128(octets.as_ptr() as *const __m128i);
         octets = &octets[16..];
         let y = _mm_shuffle_epi8(y, shuf_mask);
-        x = reduce128(x, y, k3k4);
+        x = reduce128_x86(x, y, k3k4);
     }
 
     if octets.len() > 0 {
@@ -258,7 +258,7 @@ r#"
         x = _mm_shuffle_epi8(x, shuf_mask);
         let y = _mm_loadu_si128(bfr[16..].as_ptr() as *const __m128i);
         let y = _mm_shuffle_epi8(y, shuf_mask);
-        x = reduce128(x, y, k3k4);
+        x = reduce128_x86(x, y, k3k4);
     }
 
     let k5k6 = _mm_set_epi64x(K6, K5);
@@ -289,7 +289,7 @@ r#"
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 #[target_feature(enable = "pclmulqdq")]
 #[target_feature(enable = "sse4.1")]
-unsafe fn fold_by_4_128(
+unsafe fn fold_by_4_128_x86(
     x3: __m128i,
     x2: __m128i,
     x1: __m128i,
@@ -312,17 +312,17 @@ unsafe fn fold_by_4_128(
     let y1 = _mm_shuffle_epi8(y1, shuf_mask);
     let y0 = _mm_shuffle_epi8(y0, shuf_mask);
 
-    let x3 = reduce128(x3, y3, k1k2);
-    let x2 = reduce128(x2, y2, k1k2);
-    let x1 = reduce128(x1, y1, k1k2);
-    let x0 = reduce128(x0, y0, k1k2);
+    let x3 = reduce128_x86(x3, y3, k1k2);
+    let x2 = reduce128_x86(x2, y2, k1k2);
+    let x1 = reduce128_x86(x1, y1, k1k2);
+    let x0 = reduce128_x86(x0, y0, k1k2);
     (x3, x2, x1, x0)
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 #[target_feature(enable = "pclmulqdq")]
 #[target_feature(enable = "sse4.1")]
-unsafe fn reduce128(a: __m128i, b: __m128i, keys: __m128i) -> __m128i {
+unsafe fn reduce128_x86(a: __m128i, b: __m128i, keys: __m128i) -> __m128i {
     let t1 = _mm_clmulepi64_si128(a, keys, 0x01);
     let t2 = _mm_clmulepi64_si128(a, keys, 0x10);
     _mm_xor_si128(_mm_xor_si128(b, t1), t2)
