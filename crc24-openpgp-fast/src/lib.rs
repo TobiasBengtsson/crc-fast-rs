@@ -17,3 +17,63 @@
 use crc_fast_gen::crc;
 
 crc!(0x1864CFB, 0xB704CE, 0x000000, 0x470B16, 0xE8DDBB, 0x21CF02);
+
+#[cfg(test)]
+mod tests2 {
+    use super::*;
+    use core::arch::aarch64::*;
+
+    const LOREM: &[u8] = b"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing";
+
+    #[test]
+    fn test_reduce_128() {
+        unsafe {
+            let mut octets = LOREM;
+            let a = vld1q_u8(octets.as_ptr());
+            octets = &octets[16..];
+            let b = vld1q_u8(octets.as_ptr());
+            octets = &octets[16..];
+            let keys = vld1q_u8(octets.as_ptr());
+            let res = reduce128_aarch64(a, b, keys);
+            let res1 = vgetq_lane_u64(vreinterpretq_u64_u8(res), 0);
+            let res2 = vgetq_lane_u64(vreinterpretq_u64_u8(res), 1);
+            assert_eq!(-6089566745492282719, res1 as i64);
+            assert_eq!(8026878494633897026, res2 as i64);
+        }
+    }
+
+    #[test]
+    fn test_fold_by_4() {
+        unsafe {
+            let mut octets = LOREM;
+            let x3 = vld1q_u8(octets.as_ptr());
+            octets = &octets[16..];
+            let x2 = vld1q_u8(octets.as_ptr());
+            octets = &octets[16..];
+            let x1 = vld1q_u8(octets.as_ptr());
+            octets = &octets[16..];
+            let x0 = vld1q_u8(octets.as_ptr());
+            octets = &octets[16..];
+            let k1k2 = vld1q_u8(octets.as_ptr());
+	    let mask_vec: &[u8] = &[15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
+            let shuf_mask = vld1q_u8(mask_vec.as_ptr());
+            let (x3, x2, x1, x0) = fold_by_4_128_aarch64(x3, x2, x1, x0, k1k2, shuf_mask, &mut octets);
+            let x30 = vgetq_lane_u64(vreinterpretq_u64_u8(x3), 0);
+            let x31 = vgetq_lane_u64(vreinterpretq_u64_u8(x3), 1);
+            let x20 = vgetq_lane_u64(vreinterpretq_u64_u8(x2), 0);
+            let x21 = vgetq_lane_u64(vreinterpretq_u64_u8(x2), 1);
+            let x10 = vgetq_lane_u64(vreinterpretq_u64_u8(x1), 0);
+            let x11 = vgetq_lane_u64(vreinterpretq_u64_u8(x1), 1);
+            let x00 = vgetq_lane_u64(vreinterpretq_u64_u8(x0), 0);
+            let x01 = vgetq_lane_u64(vreinterpretq_u64_u8(x0), 1);
+            assert_eq!(5187593564482680326, x30 as i64);
+            assert_eq!(8753083550889144180, x31 as i64);
+            assert_eq!(8051188773102948955, x20 as i64);
+            assert_eq!(8494483764193056670, x21 as i64);
+            assert_eq!(-7881998536081007936, x10 as i64);
+            assert_eq!(8033856024965085569, x11 as i64);
+            assert_eq!(130966721244190941, x00 as i64);
+            assert_eq!(7833682863302847382, x01 as i64);
+        }
+    }
+}
