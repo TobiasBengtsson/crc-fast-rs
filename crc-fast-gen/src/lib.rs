@@ -110,6 +110,9 @@ use core::arch::x86_64::*;
 
 #[cfg(target_arch = "x86")]
 use core::arch::x86::*;
+
+#[cfg(target_arch = "aarch64")]
+use core::arch::aarch64::*;
 "#.to_owned() +
         format!("const POLY: u64 = {};", poly_str).as_str() +
         format!("const INIT: u64 = {};", init_str).as_str() +
@@ -130,6 +133,11 @@ pub fn hash(octets: &[u8]) -> u32 {
         unsafe {
             return hash_pclmulqdq(octets);
         }
+    }
+
+    #[cfg(all(target_arch = "aarch64", target_feature="aes"))]
+    unsafe {
+        return hash_pmull(octets);
     }
 
     hash_fallback(octets)
@@ -328,6 +336,159 @@ unsafe fn reduce128_x86(a: __m128i, b: __m128i, keys: __m128i) -> __m128i {
     _mm_xor_si128(_mm_xor_si128(b, t1), t2)
 }
 
+#[cfg(target_arch = "aarch64")]
+#[allow(overflowing_literals)]
+#[target_feature(enable = "aes")]
+unsafe fn hash_pmull(bin: &[u8]) -> u32 {
+    let mut octets = bin;
+"# +
+     format!("    const Q_X: i64 = {};", poly_str_simd).as_str() +
+     format!("    const U: i64 = {:#X};", u).as_str() +
+     format!("    const K1: i64 = {:#X};", k1).as_str() +
+     format!("    const K2: i64 = {:#X};", k2).as_str() +
+     format!("    const K3: i64 = {:#X};", k3).as_str() +
+     format!("    const K4: i64 = {:#X};", k4).as_str() +
+     format!("    const K5: i64 = {:#X};", k5).as_str() +
+     format!("    const K6: i64 = {:#X};", k6).as_str() +
+r#"
+    if octets.len() < 128 {
+        return hash_fallback(octets);
+    }
+
+    let shuf_mask = vld1q_u8([15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0].as_ptr());
+
+    let mut x3 = vld1q_u8(octets.as_ptr());
+    octets = &octets[16..];
+    let mut x2 = vld1q_u8(octets.as_ptr());
+    octets = &octets[16..];
+    let mut x1 = vld1q_u8(octets.as_ptr());
+    octets = &octets[16..];
+    let mut x0 = vld1q_u8(octets.as_ptr());
+    octets = &octets[16..];
+
+    x3 = vqtbl1q_u8(x3, shuf_mask);
+    x2 = vqtbl1q_u8(x2, shuf_mask);
+    x1 = vqtbl1q_u8(x1, shuf_mask);
+    x0 = vqtbl1q_u8(x0, shuf_mask);
+"# +
+     format!("    x3 = veorq_u8(x3, vreinterpretq_u8_s32(vld1q_s32([0, 0, 0, {}i32].as_ptr())));", init_str_simd).as_str() +
+r#"
+
+    let k1k2 = vreinterpretq_u8_s64(vld1q_s64([K1, K2].as_ptr()));
+    while octets.len() >= 128 {
+        (x3, x2, x1, x0) = fold_by_4_128_aarch64(x3, x2, x1, x0, k1k2, shuf_mask, &mut octets);
+    }
+
+    let k3k4 = vreinterpretq_u8_s64(vld1q_s64([K3, K4].as_ptr()));
+    let mut x = reduce128_aarch64(x3, x2, k3k4);
+    x = reduce128_aarch64(x, x1, k3k4);
+    x = reduce128_aarch64(x, x0, k3k4);
+
+    while octets.len() >= 16 {
+        let y = vld1q_u8(octets.as_ptr());
+        octets = &octets[16..];
+        let y = vqtbl1q_u8(y, shuf_mask);
+        x = reduce128_aarch64(x, y, k3k4);
+    }
+
+    if octets.len() > 0 {
+        // Pad data with zero to 256 bits, apply final reduce
+        let pad = 16 - octets.len() as i32;
+        let pad_usize = pad as usize;
+        let mut bfr: [u8; 32] = [0; 32];
+
+        // TODO: the back-and forth shuffling of x shouldn't be necessary
+        x = vqtbl1q_u8(x, shuf_mask);
+        vst1q_u8(bfr[pad_usize..].as_ptr() as *mut u8, x);
+        bfr[16+pad_usize..].copy_from_slice(&octets);
+        x = vld1q_u8(bfr.as_ptr());
+        x = vqtbl1q_u8(x, shuf_mask);
+        let y = vld1q_u8(bfr[16..].as_ptr());
+        let y = vqtbl1q_u8(y, shuf_mask);
+        x = reduce128_aarch64(x, y, k3k4);
+    }
+
+    let k5k6 = vreinterpretq_u8_s64(vld1q_s64([K5, K6].as_ptr()));
+    // Apply 128 -> 64 bit reduce
+    let k5mul = core::mem::transmute(vmull_p64(vgetq_lane_p64(vreinterpretq_p64_u8(x), 1), vgetq_lane_p64(vreinterpretq_p64_u8(k5k6), 0)));
+
+    // Left shift by 4 bytes using tbl lookup. Out-of index automatically zeroes the right bytes.
+    let left_shift_4bytes_mask = vld1q_u8([255, 255, 255, 255, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].as_ptr());
+    let x = vandq_u8(
+        veorq_u8(
+            vqtbl1q_u8(x, left_shift_4bytes_mask),
+            k5mul,
+        ),
+        vreinterpretq_u8_s32(vld1q_s32([!0, !0, !0, 0].as_ptr())),
+    );
+
+    let k6mul = core::mem::transmute(vmull_p64(vgetq_lane_p64(vreinterpretq_p64_u8(x), 1), vgetq_lane_p64(vreinterpretq_p64_u8(k5k6), 1)));
+    let x = vandq_u8(veorq_u8(x, k6mul), vreinterpretq_u8_s32(vld1q_s32([!0, !0, 0, 0].as_ptr())));
+
+    let right_shift_4bytes_mask = vld1q_u8([4,5,6,7,8,9,10,11,12,13,14,15,255,255,255,255].as_ptr());
+    let pu = vreinterpretq_u8_s64(vld1q_s64([Q_X, U].as_ptr()));
+    let t1 = core::mem::transmute(
+        vmull_p64(
+            vgetq_lane_p64(vreinterpretq_p64_u8(vqtbl1q_u8(x, right_shift_4bytes_mask)), 0),
+            vgetq_lane_p64(vreinterpretq_p64_u8(pu), 1),
+        ),
+    );
+    let t2 = core::mem::transmute(
+        vmull_p64(
+            vgetq_lane_p64(vreinterpretq_p64_u8(vqtbl1q_u8(t1, right_shift_4bytes_mask)), 0),
+            vgetq_lane_p64(vreinterpretq_p64_u8(pu), 0),
+        ),
+    );
+
+    let x = veorq_u8(x, t2);
+    let mut c = vgetq_lane_u32(vreinterpretq_u32_u8(x), 0) as u32;
+
+"# +
+     format!("    c = c >> {};", 32 - n).as_str() +
+     format!("    c ^ {}", output_xor).as_str() +
+r#"
+}
+
+#[cfg(target_arch = "aarch64")]
+#[target_feature(enable = "aes")]
+unsafe fn fold_by_4_128_aarch64(
+    x3: uint8x16_t,
+    x2: uint8x16_t,
+    x1: uint8x16_t,
+    x0: uint8x16_t,
+    k1k2: uint8x16_t,
+    shuf_mask: uint8x16_t,
+    octets: &mut &[u8],
+) -> (uint8x16_t, uint8x16_t, uint8x16_t, uint8x16_t) {
+    let y3 = vld1q_u8(octets.as_ptr());
+    *octets = &octets[16..];
+    let y2 = vld1q_u8(octets.as_ptr());
+    *octets = &octets[16..];
+    let y1 = vld1q_u8(octets.as_ptr());
+    *octets = &octets[16..];
+    let y0 = vld1q_u8(octets.as_ptr());
+    *octets = &octets[16..];
+
+    let y3 = vqtbl1q_u8(y3, shuf_mask);
+    let y2 = vqtbl1q_u8(y2, shuf_mask);
+    let y1 = vqtbl1q_u8(y1, shuf_mask);
+    let y0 = vqtbl1q_u8(y0, shuf_mask);
+
+    let x3 = reduce128_aarch64(x3, y3, k1k2);
+    let x2 = reduce128_aarch64(x2, y2, k1k2);
+    let x1 = reduce128_aarch64(x1, y1, k1k2);
+    let x0 = reduce128_aarch64(x0, y0, k1k2);
+    (x3, x2, x1, x0)
+}
+
+#[cfg(target_arch = "aarch64")]
+#[target_feature(enable = "aes")]
+unsafe fn reduce128_aarch64(a: uint8x16_t, b: uint8x16_t, keys: uint8x16_t) -> uint8x16_t {
+    let t1 = core::mem::transmute(vmull_p64(vgetq_lane_p64(vreinterpretq_p64_u8(a), 0), vgetq_lane_p64(vreinterpretq_p64_u8(keys), 1)));
+    let t2 = core::mem::transmute(vmull_p64(vgetq_lane_p64(vreinterpretq_p64_u8(a), 1), vgetq_lane_p64(vreinterpretq_p64_u8(keys), 0)));
+    veorq_u8(veorq_u8(b, t1), t2)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -341,6 +502,15 @@ mod tests {
     #[test]
     pub fn test_lorem_pclmulqdq() {
         let result = unsafe {hash_pclmulqdq(LOREM) };
+"# +
+     format!("        assert_eq!(result, {});", lorem_expected_result).as_str() +
+r#"
+    }
+
+    #[cfg(any(target_arch = "aarch64"))]
+    #[test]
+    pub fn test_lorem_pmull() {
+        let result = unsafe {hash_pmull(LOREM) };
 "# +
      format!("        assert_eq!(result, {});", lorem_expected_result).as_str() +
 r#"
@@ -366,6 +536,15 @@ r#"
     #[test]
     pub fn test_lorem_aligned_pclmulqdq() {
         let result = unsafe { hash_pclmulqdq(LOREM_ALIGNED) };
+"# +
+     format!("        assert_eq!(result, {});", lorem_aligned_expected_result).as_str() +
+r#"
+    }
+
+    #[cfg(any(target_arch = "aarch64"))]
+    #[test]
+    pub fn test_lorem_aligned_pmull() {
+        let result = unsafe { hash_pmull(LOREM_ALIGNED) };
 "# +
      format!("        assert_eq!(result, {});", lorem_aligned_expected_result).as_str() +
 r#"
@@ -403,51 +582,66 @@ r#"
 r#"
     }
 
-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"))]
     #[test]
     pub fn test_120_bytes() {
         // Uses fallback
         let raw = b"12345678".repeat(15);
         let expected_result = hash_simple(&raw);
+        #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
         let result = unsafe { hash_pclmulqdq(&raw) };
+        #[cfg(any(target_arch = "aarch64"))]
+        let result = unsafe { hash_pmull(&raw) };
         assert_eq!(result, expected_result);
     }
 
-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"))]
     #[test]
     pub fn test_128_bytes() {
         let raw = b"12345678".repeat(16);
         let expected_result = hash_simple(&raw);
+        #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
         let result = unsafe { hash_pclmulqdq(&raw) };
+        #[cfg(any(target_arch = "aarch64"))]
+        let result = unsafe { hash_pmull(&raw) };
         assert_eq!(result, expected_result);
     }
 
-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"))]
     #[test]
     pub fn test_2187_bytes() {
         // Large enough to fold multiple times, will need padding
         let raw = b"abc123)(#".repeat(243);
         let expected_result = hash_simple(&raw);
+        #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
         let result = unsafe { hash_pclmulqdq(&raw) };
+        #[cfg(any(target_arch = "aarch64"))]
+        let result = unsafe { hash_pmull(&raw) };
         assert_eq!(result, expected_result);
     }
 
-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"))]
     #[test]
     pub fn test_80056_bytes() {
         // Random "larger" number
         let raw = b"1jn5?`=Z".repeat(10007);
         let expected_result = hash_simple(&raw);
+        #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
         let result = unsafe { hash_pclmulqdq(&raw) };
+        #[cfg(any(target_arch = "aarch64"))]
+        let result = unsafe { hash_pmull(&raw) };
         assert_eq!(result, expected_result);
     }
 
-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"))]
     #[test]
     pub fn test_zero_data() {
         let raw = [0; 10007];
         let expected_result = hash_simple(&raw);
+        #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
         let result = unsafe { hash_pclmulqdq(&raw) };
+        #[cfg(any(target_arch = "aarch64"))]
+        let result = unsafe { hash_pmull(&raw) };
         assert_eq!(result, expected_result);
     }
 }
