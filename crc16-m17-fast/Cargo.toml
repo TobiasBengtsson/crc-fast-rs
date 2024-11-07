@@ -3,7 +3,7 @@ name = "crc16-m17-fast"
 authors = ["Tobias Bengtsson <me@tobiasbengtsson.se>"]
 description = "SIMD-powered implementation of CRC-16/M17"
 repository = "https://github.com/TobiasBengtsson/crc-fast-rs"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 license = "MIT"
 keywords = ["crc", "checksum", "hash", "simd"]
@@ -13,7 +13,7 @@ default = ["table-fallback"]
 table-fallback = []
 
 [dependencies]
-crc-fast-gen = "0.3.0"
+crc-fast-gen = "0.4.0"
 core_detect = "1"
 
 [dev-dependencies]
