@@ -107,398 +107,398 @@ checksum = "7f8f80099a98041a3d1622845c271458a2d73e688351bf3cb999266764b81d48"
 
 [[package]]
 name = "crc-fast-gen"
-version = "0.3.0"
+version = "0.4.0"
 
 [[package]]
 name = "crc-fast-gen"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c1b760d1a70bb51d1d558a57470de2c8bd33b56cc3d8ad50dadfffa979f209c"
+checksum = "3b5837bc1b707d698e72031ae2e35523ec84ef29be8b6bf0e95aac9ff138241d"
 
 [[package]]
 name = "crc16-cdma2000-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-cms-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-dds110-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-dectr-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-dectx-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-en13757-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-genibus-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-gsm-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-ibm3740-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-m17-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-opensafetya-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-opensafetyb-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-profibus-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-spifujitsu-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-t10dif-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-teledisk-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-umts-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc16-xmodem-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc24-flexraya-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc24-flexrayb-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc24-interlaken-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc24-ltea-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc24-lteb-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc24-openpgp-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc24-os9-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc32-aixm-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc32-bzip2-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc32-cksum-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc32-mpeg2-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc32-xfer-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc8-autosar-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc8-cdma2000-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc8-dvbs2-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc8-gsma-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc8-gsmb-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc8-hitag-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc8-i4321-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc8-icode-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc8-lte-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc8-mifaremad-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc8-nrsc5-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc8-opensafety-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
 [[package]]
 name = "crc8-smbus-fast"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "core_detect",
- "crc-fast-gen 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crc-fast-gen 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion",
 ]
 
