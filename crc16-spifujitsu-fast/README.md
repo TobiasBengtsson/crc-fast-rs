@@ -11,9 +11,14 @@ TL;DR: uses SIMD if available, otherwise falls back seamlessly to a lookup table
 algorithm.
 
 - If using `hash`, will use SIMD if the CPU is capable
-  Currently, x86-64 CPU:s with the following CPU flags are supported:
-  - `pclmulqdq`
-  - `sse4.1`
+  - x86-64 CPU:s with the following CPU flags are supported (runtime detection):
+    - `pclmulqdq`
+    - `sse4.1`
+  - aarch64 CPU:s with the following CPU flags are supported:
+    - `nano`
+    - `aes`
+  - **IMPORTANT**: aarch64 does not use runtime feature detection and has to be
+    built with a compatible target-cpu to use SIMD, unlike x86-64.
 - If using `hash` with an incompatible CPU the fallback algorithm will be
   invoked. If the `table-fallback` feature is active the fallback is based on
   a lookup table, otherwise a simple loop (slowest option). Deactivating
