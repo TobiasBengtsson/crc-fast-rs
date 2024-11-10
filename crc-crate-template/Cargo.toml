@@ -13,7 +13,7 @@ default = ["table-fallback"]
 table-fallback = []
 
 [dependencies]
-crc-fast-gen = "$VERSION"
+crc-fast-gen = { path = "../crc-fast-gen" }
 core_detect = "1"
 
 [dev-dependencies]
