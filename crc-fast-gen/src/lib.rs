@@ -13,7 +13,7 @@ use proc_macro::TokenStream;
 // Adapted from https://stackoverflow.com/q/21171733
 // t=exponent, n=crc bits, m=mask, q=quotient, r=remainder
 fn calc_const(mut t: u32, mut poly: u64) -> (u64, u64) {
-    let mut n = get_n(format!("{:#X}", poly).as_str());
+    let mut n = get_n(poly);
     if t < n {
         return (0, poly);
     }
@@ -40,13 +40,13 @@ fn calc_const(mut t: u32, mut poly: u64) -> (u64, u64) {
 /// Get the degree of the polynomial. Throws if unsupported.
 /// WARNING: still UB for unsupported degrees (since the string can have the
 /// same length as a supported one, and the function is currently rather naive)
-fn get_n(poly_str: &str) -> u32 {
-    let n = 4 * (poly_str.len() - 3);
-    if !matches!(n, 8 | 16 | 24 | 32) {
+fn get_n(poly: u64) -> u32 {
+    let n = poly.ilog2();
+    if n > 32 {
         unimplemented!("{}-bit CRCs are not currently supported", n)
     }
 
-    n as u32
+    n
 }
 
 fn get_table(n: u32, poly: u64) -> String {
@@ -87,16 +87,16 @@ pub fn crc(ts: TokenStream) -> TokenStream {
     let lorem_expected_result = args.get(3).unwrap();
     let lorem_aligned_expected_result = args.get(4).unwrap();
     let check_expected_result = args.get(5).unwrap();
-    let n = get_n(poly_str);
 
     let poly = u64::from_str_radix(poly_str.strip_prefix("0x").unwrap(), 16).unwrap();
+    let init = u64::from_str_radix(init_str.strip_prefix("0x").unwrap(), 16).unwrap();
+    let n = get_n(poly);
 
     // Shifted to the left to 32-bits (i.e. with trailing zeroes).
-    let poly_str_simd = format!("{:0<11}", poly_str);
-    let init_str_simd = format!("{:0<10}", init_str);
+    let poly_simd = poly << 32 - n;
+    let init_simd = init << 32 - n;
 
     // Calculate constants used in SIMD
-    let poly_simd = u64::from_str_radix(poly_str_simd.strip_prefix("0x").unwrap(), 16).unwrap();
     let (u, k6) = calc_const(64, poly_simd);
     let (_, k5) = calc_const(96, poly_simd);
     let (_, k4) = calc_const(128, poly_simd);
@@ -210,7 +210,7 @@ r#"
 unsafe fn hash_pclmulqdq(bin: &[u8]) -> u32 {
     let mut octets = bin;
 "# +
-     format!("    const Q_X: i64 = {};", poly_str_simd).as_str() +
+     format!("    const Q_X: i64 = {:#X};", poly_simd).as_str() +
      format!("    const U: i64 = {:#X};", u).as_str() +
      format!("    const K1: i64 = {:#X};", k1).as_str() +
      format!("    const K2: i64 = {:#X};", k2).as_str() +
@@ -239,7 +239,7 @@ r#"
     x1 = _mm_shuffle_epi8(x1, shuf_mask);
     x0 = _mm_shuffle_epi8(x0, shuf_mask);
 "# +
-     format!("    x3 = _mm_xor_si128(x3, _mm_set_epi32({}i32, 0, 0, 0));", init_str_simd).as_str() +
+     format!("    x3 = _mm_xor_si128(x3, _mm_set_epi32({:#X}i32, 0, 0, 0));", init_simd).as_str() +
 r#"
 
     let k1k2 = _mm_set_epi64x(K2, K1);
@@ -349,7 +349,7 @@ unsafe fn reduce128_x86(a: __m128i, b: __m128i, keys: __m128i) -> __m128i {
 unsafe fn hash_pmull(bin: &[u8]) -> u32 {
     let mut octets = bin;
 "# +
-     format!("    const Q_X: i64 = {};", poly_str_simd).as_str() +
+     format!("    const Q_X: i64 = {:#X};", poly_simd).as_str() +
      format!("    const U: i64 = {:#X};", u).as_str() +
      format!("    const K1: i64 = {:#X};", k1).as_str() +
      format!("    const K2: i64 = {:#X};", k2).as_str() +
@@ -378,7 +378,7 @@ r#"
     x1 = vqtbl1q_u8(x1, shuf_mask);
     x0 = vqtbl1q_u8(x0, shuf_mask);
 "# +
-     format!("    x3 = veorq_u8(x3, vreinterpretq_u8_s32(vld1q_s32([0, 0, 0, {}i32].as_ptr())));", init_str_simd).as_str() +
+     format!("    x3 = veorq_u8(x3, vreinterpretq_u8_s32(vld1q_s32([0, 0, 0, {:#X}i32].as_ptr())));", init_simd).as_str() +
 r#"
 
     let k1k2 = vreinterpretq_u8_s64(vld1q_s64([K1, K2].as_ptr()));
