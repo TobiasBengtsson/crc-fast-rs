@@ -17,8 +17,9 @@ algorithm.
   - aarch64 CPU:s with the following CPU flags are supported:
     - `nano`
     - `aes`
-  - **IMPORTANT**: aarch64 does not use runtime feature detection and has to be
-    built with a compatible target-cpu to use SIMD, unlike x86-64.
+  - **IMPORTANT**: To use runtime CPU feature detection on aarch64, the `std`
+    feature is required. Otherwise it has to be built with a compatible
+    target-cpu to use SIMD, unlike x86-64.
 - If using `hash` with an incompatible CPU the fallback algorithm will be
   invoked. If the `table-fallback` feature is active the fallback is based on
   a lookup table, otherwise a simple loop (slowest option). Deactivating

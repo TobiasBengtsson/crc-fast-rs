@@ -1,0 +1,28 @@
+[package]
+name = "crc10-cdma2000-fast"
+authors = ["Tobias Bengtsson <me@tobiasbengtsson.se>"]
+description = "SIMD-powered implementation of CRC-10/CDMA2000"
+repository = "https://github.com/TobiasBengtsson/crc-fast-rs"
+version = "0.5.0"
+edition = "2021"
+license = "MIT"
+keywords = ["crc", "checksum", "hash", "simd"]
+
+[features]
+default = ["table-fallback"]
+table-fallback = []
+std = []
+
+[dependencies]
+crc-fast-gen = "0.5.0"
+core_detect = "1"
+
+[dev-dependencies]
+criterion = {version = "0.5", features = ["html_reports"] }
+
+[lib]
+bench = false
+
+[[bench]]
+name = "simd_vs_table_vs_simple"
+harness = false

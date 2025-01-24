@@ -3,7 +3,7 @@ name = "crc32-mpeg2-fast"
 authors = ["Tobias Bengtsson <me@tobiasbengtsson.se>"]
 description = "SIMD-powered implementation of CRC-32/MPEG-2"
 repository = "https://github.com/TobiasBengtsson/crc-fast-rs"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 license = "MIT"
 keywords = ["crc", "checksum", "hash", "simd"]
@@ -11,9 +11,10 @@ keywords = ["crc", "checksum", "hash", "simd"]
 [features]
 default = ["table-fallback"]
 table-fallback = []
+std = []
 
 [dependencies]
-crc-fast-gen = "0.4.0"
+crc-fast-gen = "0.5.0"
 core_detect = "1"
 
 [dev-dependencies]
