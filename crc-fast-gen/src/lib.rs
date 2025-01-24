@@ -139,6 +139,13 @@ pub fn hash(octets: &[u8]) -> u32 {
     unsafe {
         return hash_pmull(octets);
     }
+    #[cfg(all(target_arch = "aarch64", feature="std"))]
+    if std::arch::is_aarch64_feature_detected!("aes")
+    {
+        unsafe {
+            return hash_pmull(octets);
+        }
+    }
 
     hash_fallback(octets)
 }
