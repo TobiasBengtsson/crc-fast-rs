@@ -11,6 +11,7 @@ keywords = ["crc", "checksum", "hash", "simd"]
 [features]
 default = ["table-fallback"]
 table-fallback = []
+std = []
 
 [dependencies]
 crc-fast-gen = "$VERSION"
